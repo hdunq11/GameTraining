@@ -1,3 +1,3 @@
 # Ph1_startgamedev
 
-https://minhat0810.github.io/GameTraining/Phase1/Started_with_game_development/smooth_canvas_animation/
+https://hdungq11.github.io/GameTraining/Phase1/s_game_dev/smooth_canvas_animation/
