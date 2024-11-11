@@ -1,2 +1,2 @@
 # GameTraining
-https://minhat0810.github.io/GameTraining/Phase1/Basic_game_math_and_physics/Vectors_speed_velocity/
+https://hdunq11.github.io/GameTraining/Phase1/game_math_physic/Vectors_speed_velocity/
