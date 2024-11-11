@@ -34,7 +34,7 @@ function init() {
 function draw() {
     context.clearRect(0, 0, canvas.width, canvas.height);
 
-    context.fillStyle = "#4CAF50";
+    context.fillStyle = "red";
     context.fillRect(rectX, rectY, width, height);
 
         context.font = '16px Arial';
