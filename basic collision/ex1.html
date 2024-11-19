@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rectangle-Circle Collision Simulation</title>
+</head>
+<body>
+    <canvas id="gameCanvas" width="600" height="400" style="border:1px solid lightgrey;"></canvas>
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const context = canvas.getContext("2d");
+        const restitution = 0.90;
+        let circle, rect;
+
+        function initObjects() {
+            circle = {
+                x: 50,
+                y: 150,
+                radius: 30,
+                vx: 100,
+                vy: 60
+            };
+
+            rect = {
+                x: 300,
+                y: 150,
+                width: 100,
+                height: 100,
+                vx: -50,
+                vy: 30
+            };
+        }
+
+        function detectCircleRectCollision(circle, rect) {
+            let closestX = Math.max(rect.x, Math.min(circle.x, rect.x + rect.width));
+            let closestY = Math.max(rect.y, Math.min(circle.y, rect.y + rect.height));
+
+            let distanceX = circle.x - closestX;
+            let distanceY = circle.y - closestY;
+            let distance = Math.sqrt(distanceX * distanceX + distanceY * distanceY);
+
+            if (distance <= circle.radius) {
+                let normalX = 0;
+                let normalY = 0;
+                if (distance !== 0) {
+                    normalX = distanceX / distance;
+                    normalY = distanceY / distance;
+                } else {
+                    normalX = 1;
+                    normalY = 0;
+                }
+
+                return {
+                    collision: true,
+                    collisionPoint: { x: closestX, y: closestY },
+                    normalVector: { x: normalX, y: normalY }
+                };
+            } else {
+                return {
+                    collision: false,
+                    collisionPoint: null,
+                    normalVector: null
+                };
+            }
+        }
+
+        function drawCircle(circle) {
+            context.beginPath();
+            context.arc(circle.x, circle.y, circle.radius, 0, 2 * Math.PI);
+            context.fillStyle = '#0099b0';
+            context.fill();
+            context.stroke();
+        }
+
+        function drawRectangle(rect) {
+            context.fillStyle = '#0099b0';
+            context.fillRect(rect.x, rect.y, rect.width, rect.height);
+        }
+
+        function drawCollisionDetails(result) {
+            if (result.collision) {
+                context.beginPath();
+                context.arc(result.collisionPoint.x, result.collisionPoint.y, 5, 0, 2 * Math.PI);
+                context.fillStyle = 'red';
+                context.fill();
+
+                context.beginPath();
+                context.moveTo(result.collisionPoint.x, result.collisionPoint.y);
+                context.lineTo(
+                    result.collisionPoint.x + result.normalVector.x * 30,
+                    result.collisionPoint.y + result.normalVector.y * 30
+                );
+                context.strokeStyle = 'red';
+                context.stroke();
+            }
+        }
+
+        function clearCanvas() {
+            context.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        function updatePositions(secondsPassed) {
+            circle.x += circle.vx * secondsPassed;
+            circle.y += circle.vy * secondsPassed;
+
+            rect.x += rect.vx * secondsPassed;
+            rect.y += rect.vy * secondsPassed;
+
+            // Kiểm tra va chạm với viền canvas và thay đổi hướng di chuyển
+            if (circle.x - circle.radius < 0 || circle.x + circle.radius > canvas.width) {
+                circle.vx = -circle.vx * restitution;
+            }
+            if (circle.y - circle.radius < 0 || circle.y + circle.radius > canvas.height) {
+                circle.vy = -circle.vy * restitution;
+            }
+
+            if (rect.x < 0 || rect.x + rect.width > canvas.width) {
+                rect.vx = -rect.vx * restitution;
+            }
+            if (rect.y < 0 || rect.y + rect.height > canvas.height) {
+                rect.vy = -rect.vy * restitution;
+            }
+        }
+
+        let oldTimeStamp = 0;
+        function gameLoop(timeStamp) {
+            let secondsPassed = (timeStamp - oldTimeStamp) / 1000;
+            oldTimeStamp = timeStamp;
+
+            clearCanvas();
+            updatePositions(secondsPassed);
+
+            let result = detectCircleRectCollision(circle, rect);
+            if (result.collision) {
+                console.log("Collision detected!");
+                console.log("Collision Point:", result.collisionPoint);
+                console.log("Normal Vector:", result.normalVector);
+            }
+
+            drawCircle(circle);
+            drawRectangle(rect);
+            drawCollisionDetails(result);
+
+            window.requestAnimationFrame(gameLoop);
+        }
+
+        initObjects();
+        window.requestAnimationFrame(gameLoop);
+    </script>
+</body>
+</html>
