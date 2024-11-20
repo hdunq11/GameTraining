@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rectangle Collision</title>
+</head>
+
+<body>
+    <canvas id="gameCanvas" width="600" height="400" style="border:1px solid lightgrey;"></canvas>
+    <div id="velocityDisplay">
+        <p>Vận tốc hình chữ nhật 1: (vx: <span id="vx1">0</span>, vy: <span id="vy1">0</span>)</p>
+        <p>Vận tốc hình chữ nhật 2: (vx: <span id="vx2">0</span>, vy: <span id="vy2">0</span>)</p>
+    </div>
+
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const context = canvas.getContext("2d");
+        const restitution = 0.9; 
+
+        class Rectangle {
+            constructor(x, y, width, height, mass, vx, vy, color) {
+                this.x = x;
+                this.y = y;
+                this.width = width;
+                this.height = height;
+                this.mass = mass;
+                this.vx = vx;
+                this.vy = vy;
+                this.color = color; // Custom color for the rectangle
+            }
+
+            draw() {
+                context.fillStyle = this.color;
+                context.fillRect(this.x, this.y, this.width, this.height);
+            }
+
+            update(secondsPassed) {
+                this.x += this.vx * secondsPassed;
+                this.y += this.vy * secondsPassed;
+                this.checkBoundaryCollision();
+            }
+
+            checkBoundaryCollision() {
+                if (this.x + this.width > canvas.width) {
+                    this.vx = -Math.abs(this.vx) * restitution;
+                    this.x = canvas.width - this.width;
+                } else if (this.x < 0) {
+                    this.vx = Math.abs(this.vx) * restitution;
+                    this.x = 0;
+                }
+
+                if (this.y + this.height > canvas.height) {
+                    this.vy = -Math.abs(this.vy) * restitution;
+                    this.y = canvas.height - this.height;
+                } else if (this.y < 0) {
+                    this.vy = Math.abs(this.vy) * restitution;
+                    this.y = 0;
+                }
+            }
+        }
+
+        function handleCollision(rect1, rect2) {
+       
+            const overlapX = Math.min(rect1.x + rect1.width - rect2.x, rect2.x + rect2.width - rect1.x);
+            const overlapY = Math.min(rect1.y + rect1.height - rect2.y, rect2.y + rect2.height - rect1.y);
+
+            const collisionAxis = overlapX < overlapY ? 'x' : 'y';
+
+            if (collisionAxis === 'x') {
+                const v1x = rect1.vx;
+                const v2x = rect2.vx;
+
+                rect1.vx = ((rect1.mass - rect2.mass) * v1x + 2 * rect2.mass * v2x) / (rect1.mass + rect2.mass);
+                rect2.vx = ((rect2.mass - rect1.mass) * v2x + 2 * rect1.mass * v1x) / (rect1.mass + rect2.mass);
+            } else {
+         
+                const v1y = rect1.vy;
+                const v2y = rect2.vy;
+
+                rect1.vy = ((rect1.mass - rect2.mass) * v1y + 2 * rect2.mass * v2y) / (rect1.mass + rect2.mass);
+                rect2.vy = ((rect2.mass - rect1.mass) * v2y + 2 * rect1.mass * v1y) / (rect1.mass + rect2.mass);
+            }
+
+
+            document.getElementById('vx1').textContent = rect1.vx.toFixed(2);
+            document.getElementById('vy1').textContent = rect1.vy.toFixed(2);
+            document.getElementById('vx2').textContent = rect2.vx.toFixed(2);
+            document.getElementById('vy2').textContent = rect2.vy.toFixed(2);
+        }
+
+        const rect1 = new Rectangle(50, 50, 2, 100, 40);
+        const rect2 = new Rectangle(300, 150, 1, -70, 60);
+
+        let oldTimeStamp = 0;
+        function gameLoop(timeStamp) {
+            const secondsPassed = (timeStamp - oldTimeStamp) / 1000;
+            oldTimeStamp = timeStamp;
+
+            rect1.update(secondsPassed);
+            rect2.update(secondsPassed);
+
+     
+            if (rect1.x + rect1.width > rect2.x && rect1.x < rect2.x + rect2.width &&
+                rect1.y + rect1.height > rect2.y && rect1.y < rect2.y + rect2.height) {
+                handleCollision(rect1, rect2);
+            }
+            context.clearRect(0, 0, canvas.width, canvas.height);
+            rect1.draw();
+            rect2.draw();
+
+            window.requestAnimationFrame(gameLoop);
+        }
+
+        window.requestAnimationFrame(gameLoop);
+    </script>
+</body>
+
+</html>
